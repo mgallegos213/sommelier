@@ -1,4 +1,4 @@
-module generate-phrase
+module main
 
 go 1.20
 
