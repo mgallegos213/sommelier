@@ -23,7 +23,7 @@ func main() {
 	fmt.Println("seed: ", hex.EncodeToString(seed))
 
 	master, ch := hd.ComputeMastersFromSeed(seed)
-	path := "m/44'/118'/0'/0/0'"
+	path := "m/44'/118'/0'/0/0"
 	priv, err := hd.DerivePrivateKeyForPath(master, ch, path) // Note: is this where the discrepancy is originating?
 	if err != nil {
 		log.Fatal(err)

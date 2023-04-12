@@ -5,7 +5,6 @@ go 1.20
 require (
 	github.com/btcsuite/btcutil v1.0.3-0.20201208143702-a53e38424cce
 	github.com/cosmos/cosmos-sdk v0.47.1
-	github.com/decred/dcrd/bech32 v1.1.2
 	github.com/tendermint/tendermint v0.35.9
 )
 
