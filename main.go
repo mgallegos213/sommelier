@@ -1,8 +1,10 @@
 package main
 
 import (
+	"encoding/hex"
 	"flag"
 	"fmt"
+	"main/encrypt_key"
 	"main/generate_key"
 )
 
@@ -24,6 +26,9 @@ func main() {
 	phrase := flag.String("phrase", "", "mnemonic phrase (wrapped in quotes)")
 	path := flag.String("path", "m/44'/118'/0'/0/0", "HD Path, defaults to m/44'/118'/0'/0/0")
 	hrp := flag.String("hrp", "", "prefix to encode bech32 address with, defaults to none")
+
+	pubKeyPath := "encrypt_key/pubKey.asc"
+	privateKeyPath := "encrypt_key/privateKey.asc"
 
 	// Parse the flags
 	flag.Parse()
@@ -49,6 +54,13 @@ func main() {
 		for i := 0; i < *shares; i++ {
 			fmt.Println("seed shard: ", i, ": ", seedShards[i])
 		}
+		// encrypt and store the seed shards
+		err = encrypt_key.EncryptAndSave(seedShards, pubKeyPath)
+		if err != nil {
+			fmt.Errorf("error during shard encryption combination: %w", err)
+			return
+		}
+		fmt.Println("Successfully stored encrypted key shards.")
 	case "derive":
 		// Validate inputs
 		if *phrase == "" {
@@ -66,12 +78,23 @@ func main() {
 			fmt.Println("Please provide the number of shares to combine with the -n flag.")
 			return
 		}
-		args := flag.Args()
-		if len(args) != *n {
+		shardPaths := flag.Args()
+		if len(shardPaths) != *n {
 			fmt.Printf("Please provide %v shares as arguments.\n", n)
 			return
 		}
-		originalPhrase, _ := generate_key.GetOriginalPhraseFromShares(args)
+		// for each shard file, decrypt it and add it to the shards array
+		shards := make([]string, *n)
+		for i := 0; i < *n; i++ {
+			decryptedData, decryptErr := encrypt_key.DecryptAndRead(shardPaths[i], privateKeyPath)
+			if decryptErr != nil {
+				fmt.Errorf("error during shard decryption: %w", decryptErr)
+				return
+			}
+			shards[i] = hex.EncodeToString(decryptedData)
+		}
+		fmt.Println("shard data: ", shards)
+		originalPhrase, _ := generate_key.GetOriginalPhraseFromShares(shards)
 		fmt.Println("original seed: ", originalPhrase)
 	default:
 		fmt.Println("Invalid command.")
