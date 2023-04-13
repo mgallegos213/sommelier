@@ -18,9 +18,12 @@ func main() {
 	// Define command line flags
 	cmd := flag.String("c", "", "command to execute [new, derive, combineShares]")
 	flag.StringVar(cmd, "cmd", "", "command to execute [new, derive, combineShares]")
-	n := *flag.Int("n", 0, "number of shares to combine (required for combineShares command)")
+	n := flag.Int("n", 0, "number of shares to combine (required for combineShares command)")
 	shares := *flag.Int("shares", 3, "total number of shares to generate")
 	threshold := *flag.Int("threshold", 2, "number of shares required to reconstruct the seed phrase")
+	phrase := flag.String("phrase", "", "mnemonic phrase (wrapped in quotes)")
+	path := flag.String("path", "m/44'/118'/0'/0/0", "HD Path, defaults to m/44'/118'/0'/0/0")
+	hrp := flag.String("hrp", "", "prefix to encode bech32 address with, defaults to none")
 
 	// Parse the flags
 	flag.Parse()
@@ -38,7 +41,7 @@ func main() {
 			fmt.Println("Error: threshold cannot be greater than total number of shares.")
 			return
 		}
-		seedShards, err := generate_key.GenerateSeedPhrase(threshold, shares)
+		seedShards, err := generate_key.GenerateSeedPhrase(shares, threshold)
 		if err != nil {
 			fmt.Printf("Error: %v", err)
 			return
@@ -47,25 +50,24 @@ func main() {
 			fmt.Println("seed shard: ", i, ": ", seedShards[i])
 		}
 	case "derive":
-		args := flag.Args()
-		if len(args) < 2 {
-			fmt.Println("Please provide mnemonic phrase and HD path as arguments.")
+		// Validate inputs
+		if *phrase == "" {
+			fmt.Println("Error: Seed phrase is undefined")
 			return
 		}
-		mnemonic := args[0]
-		path := "m/44'/118'/0'/0/0" // Default HD path
-		hrp := "somm"
-		if len(args) == 2 {
-			path = args[1]
+		if *path == "" {
+			fmt.Println("Error: HD path is undefined")
+			return
 		}
-		fmt.Println(generate_key.DeriveAddress(mnemonic, path, hrp))
+		derivedAddress, _ := generate_key.DeriveAddress(*phrase, *path, *hrp)
+		fmt.Println(derivedAddress)
 	case "combineShares":
-		if n == 0 {
+		if *n == 0 {
 			fmt.Println("Please provide the number of shares to combine with the -n flag.")
 			return
 		}
 		args := flag.Args()
-		if len(args) != n {
+		if len(args) != *n {
 			fmt.Printf("Please provide %v shares as arguments.\n", n)
 			return
 		}
