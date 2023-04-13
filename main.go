@@ -19,8 +19,8 @@ func main() {
 	cmd := flag.String("c", "", "command to execute [new, derive, combineShares]")
 	flag.StringVar(cmd, "cmd", "", "command to execute [new, derive, combineShares]")
 	n := flag.Int("n", 0, "number of shares to combine (required for combineShares command)")
-	shares := *flag.Int("shares", 3, "total number of shares to generate")
-	threshold := *flag.Int("threshold", 2, "number of shares required to reconstruct the seed phrase")
+	shares := flag.Int("shares", 3, "total number of shares to generate")
+	threshold := flag.Int("threshold", 2, "number of shares required to reconstruct the seed phrase")
 	phrase := flag.String("phrase", "", "mnemonic phrase (wrapped in quotes)")
 	path := flag.String("path", "m/44'/118'/0'/0/0", "HD Path, defaults to m/44'/118'/0'/0/0")
 	hrp := flag.String("hrp", "", "prefix to encode bech32 address with, defaults to none")
@@ -37,16 +37,16 @@ func main() {
 	// Execute the command based on the provided flag
 	switch *cmd {
 	case "new":
-		if threshold > shares {
+		if *threshold > *shares {
 			fmt.Println("Error: threshold cannot be greater than total number of shares.")
 			return
 		}
-		seedShards, err := generate_key.GenerateSeedPhrase(shares, threshold)
+		seedShards, err := generate_key.GenerateSeedPhrase(*shares, *threshold)
 		if err != nil {
 			fmt.Printf("Error: %v", err)
 			return
 		}
-		for i := 0; i < shares; i++ {
+		for i := 0; i < *shares; i++ {
 			fmt.Println("seed shard: ", i, ": ", seedShards[i])
 		}
 	case "derive":
