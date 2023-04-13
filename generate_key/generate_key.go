@@ -14,12 +14,16 @@ func GetOriginalPhraseFromShares(shares []string) (string, error) {
 	n := len(shares)
 	bigShares := make([][]byte, n)
 	for i, share := range shares {
-		bigShares[i], _ = hex.DecodeString(share)
+		shareData, err := hex.DecodeString(share)
+		if err != nil {
+			return "", fmt.Errorf("error during share decoding: %w", err)
+		}
+		bigShares[i] = shareData
 	}
 
 	combined, err := shamir.Combine(bigShares)
 	if err != nil {
-		return "Errored out during share combination", err
+		return "", fmt.Errorf("error during share combination: %w", err)
 	}
 
 	originalSeed := string(combined)

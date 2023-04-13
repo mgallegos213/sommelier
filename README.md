@@ -6,22 +6,25 @@ To be used on an air-gapped machine.
 
 This is a command-line tool to generate a random seed phrase, shard it into multiple pieces and combine them to derive a Tendermint address. It is designed to be used on an air-gapped computer for added security. This document explains the usage of the tool and the various options available.
 
+**Note: We can build the binary on a hot machine, then transfer it to the air gapped machine.
+We can run a separate shasum check on the binary to make sure it's not tampered.**
+
 ### Prerequisites
 Go version 1.20 or later must be installed on your computer.
 
 ### Installation
 Clone this repository:
 
-`git clone https://github.com/[user]/[repo].git`
+`git clone https://github.com/mgallegos213/sommelier.git`
 
-`cd [repo]`
+`cd sommelier`
 
 #### Install dependencies:
 `go get ./...`
 
 Build the binary file:
 
-_Note: it is important that the `-trimpath` flag be added to ensure a reproducible build_
+_Note: As mentioned before, this binary should be built on a hot machine and transferred and verified on the air-gapped one where this will run. It is important that the `-trimpath` flag be added to ensure a reproducible build._
 
 `go build -trimpath main.go generate_key.go`
 
