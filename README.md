@@ -9,6 +9,13 @@ This is a command-line tool to generate a random seed phrase, shard it into mult
 **Note: We can build the binary on a hot machine, then transfer it to the air gapped machine.
 We can run a separate shasum check on the binary to make sure it's not tampered.**
 
+## Procedure Document
+Below is a procedure document as to how this tool should be used securely:
+
+https://docs.google.com/document/d/1qtjWUvA-DNqzNYQe2OxFSzh6PNVG3wrF-zwTwLMzhfQ/edit?usp=sharing
+
+^ Shared with team@unit410.com
+
 ### Prerequisites
 Go version 1.20 or later must be installed on your computer.
 
@@ -110,6 +117,3 @@ Saved original seed phrase to encrypted file:  shard/encrypted_phrase.txt.gpg
 ```
 ## Conclusion
 This tool provides a simple and secure way to generate and use seed phrases on an air-gapped computer.
-
-Below is a procedure document as to how this tool should be used securely.
-**WIP**
