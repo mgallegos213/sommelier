@@ -12,7 +12,7 @@ func printOptions() {
 	fmt.Println("Please provide a command to execute.")
 	fmt.Println("Valid options:")
 	fmt.Println("-c new -shares <total number of shares> -threshold <number required to reconstruct seed phrase>")
-	fmt.Println("-c derive \"phrase plaintext wrapped in quotes\" \"HD PATH (defaults to m/44'/118'/0'/0/0)\"")
+	fmt.Println("-c derive -phrase \"phrase plaintext wrapped in quotes\" -path \"HD PATH (defaults to m/44'/118'/0'/0/0)\"")
 	fmt.Println("-c combineShares -n <number of shares> \"share1\" \"share2\" ... \"shareN\"")
 }
 
@@ -80,7 +80,11 @@ func main() {
 			fmt.Println("Error: HD path is undefined")
 			return
 		}
-		derivedAddress, _ := generate_key.DeriveAddress(*phrase, *path, *hrp)
+		derivedAddress, err := generate_key.DeriveAddress(*phrase, *path, *hrp)
+		if err != nil {
+			fmt.Errorf("error during address derivation: %w", err)
+			return
+		}
 		fmt.Println(derivedAddress)
 	case "combineShares":
 		if *n == 0 {
