@@ -1,6 +1,6 @@
 clean:
 	rm -f main
-	cd shard && rm -f *.gpg
+	cd shard && rm -f *.gpg *.txt
 
 build:
 	go get ./...
