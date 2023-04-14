@@ -34,7 +34,7 @@ func TestGetOriginalPhraseFromShares_NotEnoughShares(t *testing.T) {
 	// Test case: Not enough shares provided to recover the original seed
 	share1 := "13bbf4d17f5ea49e1600b468363a4cb9da9b9cd1853cba34f905bfa7f22d290379deb310b7e76544aa7a9b8c1abf3464970a4fbe216847eb8d7470797941f9bea6bf769186cd3290921d0511517243b0cb011d48474e990b744d6d83aead943d0350f1685f65bf04fb42e54205516f163e8e5bbe8f5a5c1977e95fa73abb30a5af65eb91f85eff9fd7720f4f3c218c84082edfdf6934d45303d754"
 	shares := []string{share1}
-	expectedErrMsg := "less than two parts cannot be used to reconstruct the secret"
+	expectedErrMsg := "error during share combination: less than two parts cannot be used to reconstruct the secret"
 	_, err := GetOriginalPhraseFromShares(shares)
 	if err == nil || err.Error() != expectedErrMsg {
 		t.Errorf("Unexpected error. Expected: %v, Actual: %v", expectedErrMsg, err)
@@ -45,17 +45,18 @@ func TestGenerateSeedPhrase(t *testing.T) {
 	// Test case 1: Successfully generate shares from seed phrase
 	threshold := 3
 	parts := 5
-	shares, err := GenerateSeedPhrase(parts, threshold)
+	shares, phrase, err := GenerateSeedPhrase(parts, threshold)
 	if err != nil {
 		t.Errorf("Unexpected error: %v", err)
 	}
 	if len(shares) != parts {
 		t.Errorf("Unexpected number of shares. Expected: %v, Actual: %v", parts, len(shares))
 	}
+	t.Logf("Successfully generated phrase in unit test: %v", phrase)
 
 	// Test case 2: Return error when threshold > shares
 	expectedError := "parts cannot be less than threshold"
-	_, err = GenerateSeedPhrase(threshold, parts) // switch, 3 parts 5 threshold
+	_, _, err = GenerateSeedPhrase(threshold, parts) // switch, 3 parts 5 threshold
 	if err == nil {
 		t.Errorf("Expected error, but got nil")
 	}

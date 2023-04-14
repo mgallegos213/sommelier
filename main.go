@@ -27,6 +27,8 @@ func main() {
 	path := flag.String("path", "m/44'/118'/0'/0/0", "HD Path, defaults to m/44'/118'/0'/0/0")
 	hrp := flag.String("hrp", "", "prefix to encode bech32 address with, defaults to none")
 
+	verbose := flag.Bool("unsafe", false, "DEBUG ONLY, NOT SECURE: enable unsafe verbose output")
+
 	pubKeyPath := "encrypt_key/pubKey.asc"
 	privateKeyPath := "encrypt_key/privateKey.asc"
 
@@ -46,19 +48,26 @@ func main() {
 			fmt.Println("Error: threshold cannot be greater than total number of shares.")
 			return
 		}
-		seedShards, err := generate_key.GenerateSeedPhrase(*shares, *threshold)
+		seedShards, generatedPhrase, err := generate_key.GenerateSeedPhrase(*shares, *threshold)
 		if err != nil {
 			fmt.Printf("Error: %v", err)
 			return
 		}
-		for i := 0; i < *shares; i++ {
-			fmt.Println("seed shard: ", i, ": ", seedShards[i])
+		if *verbose {
+			fmt.Println("Generated mnemonic: ", generatedPhrase)
+			for i := 0; i < *shares; i++ {
+				fmt.Println("seed shard ", i, ": ", seedShards[i])
+			}
 		}
+
 		// encrypt and store the seed shards
-		err = encrypt_key.EncryptAndSave(seedShards, pubKeyPath)
-		if err != nil {
-			fmt.Errorf("error during shard encryption combination: %w", err)
-			return
+		for i := 0; i < *shares; i++ {
+			filepath := fmt.Sprintf("shard/shard_%d.txt.gpg", i)
+			err = encrypt_key.EncryptAndSaveStringToFile(seedShards[i], pubKeyPath, filepath)
+			if err != nil {
+				fmt.Errorf("error during shard encryption combination: %w", err)
+				return
+			}
 		}
 		fmt.Println("Successfully stored encrypted key shards.")
 	case "derive":
@@ -93,9 +102,22 @@ func main() {
 			}
 			shards[i] = hex.EncodeToString(decryptedData)
 		}
-		fmt.Println("shard data: ", shards)
-		originalPhrase, _ := generate_key.GetOriginalPhraseFromShares(shards)
-		fmt.Println("original seed: ", originalPhrase)
+		originalPhrase, err := generate_key.GetOriginalPhraseFromShares(shards)
+		if err != nil {
+			fmt.Errorf("error during shard decryption combination: %w", err)
+			return
+		}
+		if *verbose {
+			fmt.Println("Shard data: ", shards)
+			fmt.Println("Original seed: ", originalPhrase)
+		}
+		filename := "shard/encrypted_phrase.txt.gpg"
+		err = encrypt_key.EncryptAndSaveStringToFile(originalPhrase, pubKeyPath, filename)
+		if err != nil {
+			fmt.Errorf("error during saving encrypted seed phrase: %w", err)
+			return
+		}
+		fmt.Println("Saved original seed phrase to encrypted file: ", filename)
 	default:
 		fmt.Println("Invalid command.")
 		printOptions()

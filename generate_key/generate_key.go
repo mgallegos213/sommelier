@@ -30,26 +30,25 @@ func GetOriginalPhraseFromShares(shares []string) (string, error) {
 	return originalSeed, nil
 }
 
-func GenerateSeedPhrase(parts int, threshold int) ([]string, error) {
+func GenerateSeedPhrase(parts int, threshold int) ([]string, string, error) {
 	entropy, err := bip39.NewEntropy(256)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 	mnemonic, err := bip39.NewMnemonic(entropy)
-	fmt.Println("generated mnemonic: ", mnemonic)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 	mnemonicBytes := []byte(mnemonic)
 	shares, err := shamir.Split(mnemonicBytes, parts, threshold)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 	shareStrings := make([]string, parts)
 	for i := 0; i < parts; i++ {
 		shareStrings[i] = hex.EncodeToString(shares[i])
 	}
-	return shareStrings, nil
+	return shareStrings, mnemonic, nil
 }
 
 func DeriveAddress(mnemonic string, path string, hrp string) (string, error) {

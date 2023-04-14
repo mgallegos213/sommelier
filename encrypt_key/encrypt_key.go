@@ -2,7 +2,6 @@ package encrypt_key
 
 import (
 	"encoding/hex"
-	"fmt"
 	"golang.org/x/crypto/openpgp"
 	"golang.org/x/crypto/openpgp/armor"
 	"golang.org/x/crypto/openpgp/packet"
@@ -17,33 +16,32 @@ import (
 // For demo purposes, this provided key is not password protected and does not expire.
 // Demo only, do not use in production ^
 
-func EncryptAndSave(hexStrings []string, pubKey string) error {
+func EncryptAndSaveStringToFile(data string, pubKey string, filename string) error {
 	// Read in public key
 	recipient, err := readEntity(pubKey)
 	if err != nil {
 		return err
 	}
 
-	for i := 0; i < len(hexStrings); i++ {
-		// create a new file to save the encrypted contents
-		filename := fmt.Sprintf("shard_%d.txt.gpg", i)
-		file, createErr := os.Create(filename)
-		if createErr != nil {
-			return createErr
-		}
-
-		// convert the hex string to bytes
-		plainBytes, decodeErr := hex.DecodeString(hexStrings[i])
-		if decodeErr != nil {
-			return decodeErr
-		}
-
-		// encrypt the plaintext and save the encrypted contents to file
-		encryptErr := encrypt([]*openpgp.Entity{recipient}, nil, plainBytes, file)
-		if encryptErr != nil {
-			return encryptErr
-		}
+	// create a new file to save the encrypted contents
+	file, createErr := os.Create(filename)
+	if createErr != nil {
+		return createErr
 	}
+
+	plainBytes, decodeErr := hex.DecodeString(data)
+	if decodeErr != nil {
+		// The data string is not a valid hex string, so convert it to bytes
+		// This is the case when we use this function to encrypt the mnemonic
+		plainBytes = []byte(data)
+	}
+
+	// encrypt the plaintext and save the encrypted contents to file
+	encryptErr := encrypt([]*openpgp.Entity{recipient}, nil, plainBytes, file)
+	if encryptErr != nil {
+		return encryptErr
+	}
+
 	return nil
 }
 
@@ -104,4 +102,9 @@ func readEntity(name string) (*openpgp.Entity, error) {
 		return nil, err
 	}
 	return openpgp.ReadEntity(packet.NewReader(block.Body))
+}
+
+func isHexString(s string) bool {
+	_, err := hex.DecodeString(s)
+	return err == nil
 }

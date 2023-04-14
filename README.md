@@ -12,7 +12,7 @@ We can run a separate shasum check on the binary to make sure it's not tampered.
 ### Prerequisites
 Go version 1.20 or later must be installed on your computer.
 
-### Installation
+### Installation (Build binary yourself)
 Clone this repository:
 
 `git clone https://github.com/mgallegos213/sommelier.git`
@@ -26,7 +26,7 @@ Build the binary file:
 
 _Note: As mentioned before, this binary should be built on a hot machine and transferred and verified on the air-gapped one where this will run. It is important that the `-trimpath` flag be added to ensure a reproducible build._
 
-`go build -trimpath main.go generate_key.go`
+`go build -trimpath main.go`
 
 Run the binary file:
 
